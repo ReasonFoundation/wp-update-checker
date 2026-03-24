@@ -1,7 +1,7 @@
 <?php
-namespace YahnisElsts\PluginUpdateChecker\v5p6\Plugin;
+namespace ReasonDev\PluginUpdateChecker\v5p6\Plugin;
 
-use YahnisElsts\PluginUpdateChecker\v5p6\Metadata;
+use ReasonDev\PluginUpdateChecker\v5p6\Metadata;
 
 if ( !class_exists(PluginInfo::class, false) ):
 

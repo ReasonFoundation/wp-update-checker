@@ -1,8 +1,8 @@
 <?php
-namespace YahnisElsts\PluginUpdateChecker\v5p6\Plugin;
+namespace ReasonDev\PluginUpdateChecker\v5p6\Plugin;
 
-use YahnisElsts\PluginUpdateChecker\v5p6\InstalledPackage;
-use YahnisElsts\PluginUpdateChecker\v5p6\PucFactory;
+use ReasonDev\PluginUpdateChecker\v5p6\InstalledPackage;
+use ReasonDev\PluginUpdateChecker\v5p6\PucFactory;
 
 if ( !class_exists(Package::class, false) ):
 

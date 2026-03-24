@@ -1,7 +1,7 @@
 <?php
-namespace YahnisElsts\PluginUpdateChecker\v5p6\Plugin;
+namespace ReasonDev\PluginUpdateChecker\v5p6\Plugin;
 
-use YahnisElsts\PluginUpdateChecker\v5p6\Update as BaseUpdate;
+use ReasonDev\PluginUpdateChecker\v5p6\Update as BaseUpdate;
 
 if ( !class_exists(Update::class, false) ):
 

@@ -1,9 +1,9 @@
 <?php
 
-namespace YahnisElsts\PluginUpdateChecker\v5p6\Vcs;
+namespace ReasonDev\PluginUpdateChecker\v5p6\Vcs;
 
-use YahnisElsts\PluginUpdateChecker\v5p6\Theme;
-use YahnisElsts\PluginUpdateChecker\v5p6\Utils;
+use ReasonDev\PluginUpdateChecker\v5p6\Theme;
+use ReasonDev\PluginUpdateChecker\v5p6\Utils;
 
 if ( !class_exists(ThemeUpdateChecker::class, false) ):
 

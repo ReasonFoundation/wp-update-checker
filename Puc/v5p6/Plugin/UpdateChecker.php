@@ -1,10 +1,10 @@
 <?php
-namespace YahnisElsts\PluginUpdateChecker\v5p6\Plugin;
+namespace ReasonDev\PluginUpdateChecker\v5p6\Plugin;
 
-use YahnisElsts\PluginUpdateChecker\v5p6\InstalledPackage;
-use YahnisElsts\PluginUpdateChecker\v5p6\UpdateChecker as BaseUpdateChecker;
-use YahnisElsts\PluginUpdateChecker\v5p6\Scheduler;
-use YahnisElsts\PluginUpdateChecker\v5p6\DebugBar;
+use ReasonDev\PluginUpdateChecker\v5p6\InstalledPackage;
+use ReasonDev\PluginUpdateChecker\v5p6\UpdateChecker as BaseUpdateChecker;
+use ReasonDev\PluginUpdateChecker\v5p6\Scheduler;
+use ReasonDev\PluginUpdateChecker\v5p6\DebugBar;
 
 if ( !class_exists(UpdateChecker::class, false) ):
 

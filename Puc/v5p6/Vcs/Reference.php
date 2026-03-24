@@ -1,5 +1,5 @@
 <?php
-namespace YahnisElsts\PluginUpdateChecker\v5p6\Vcs;
+namespace ReasonDev\PluginUpdateChecker\v5p6\Vcs;
 
 if ( !class_exists(Reference::class, false) ):
 

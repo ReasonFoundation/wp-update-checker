@@ -1,7 +1,7 @@
 <?php
-namespace YahnisElsts\PluginUpdateChecker\v5p6\Theme;
+namespace ReasonDev\PluginUpdateChecker\v5p6\Theme;
 
-use YahnisElsts\PluginUpdateChecker\v5p6\InstalledPackage;
+use ReasonDev\PluginUpdateChecker\v5p6\InstalledPackage;
 
 if ( !class_exists(Package::class, false) ):
 

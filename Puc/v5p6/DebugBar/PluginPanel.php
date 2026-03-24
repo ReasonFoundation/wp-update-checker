@@ -1,7 +1,7 @@
 <?php
-namespace YahnisElsts\PluginUpdateChecker\v5p6\DebugBar;
+namespace ReasonDev\PluginUpdateChecker\v5p6\DebugBar;
 
-use YahnisElsts\PluginUpdateChecker\v5p6\Plugin\UpdateChecker;
+use ReasonDev\PluginUpdateChecker\v5p6\Plugin\UpdateChecker;
 
 if ( !class_exists(PluginPanel::class, false) ):
 

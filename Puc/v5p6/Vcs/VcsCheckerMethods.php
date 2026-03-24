@@ -1,6 +1,6 @@
 <?php
 
-namespace YahnisElsts\PluginUpdateChecker\v5p6\Vcs;
+namespace ReasonDev\PluginUpdateChecker\v5p6\Vcs;
 
 if ( !trait_exists(VcsCheckerMethods::class, false) ) :
 

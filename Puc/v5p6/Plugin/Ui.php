@@ -1,5 +1,5 @@
 <?php
-namespace YahnisElsts\PluginUpdateChecker\v5p6\Plugin;
+namespace ReasonDev\PluginUpdateChecker\v5p6\Plugin;
 
 if ( !class_exists(Ui::class, false) ):
 	/**

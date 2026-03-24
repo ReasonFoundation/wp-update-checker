@@ -1,6 +1,6 @@
 <?php
 
-namespace YahnisElsts\PluginUpdateChecker\v5p6;
+namespace ReasonDev\PluginUpdateChecker\v5p6;
 
 use WP_CLI;
 

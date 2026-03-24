@@ -1,9 +1,9 @@
 <?php
 
-namespace YahnisElsts\PluginUpdateChecker\v5p6;
+namespace ReasonDev\PluginUpdateChecker\v5p6;
 
-use YahnisElsts\PluginUpdateChecker\v5\PucFactory as MajorFactory;
-use YahnisElsts\PluginUpdateChecker\v5p6\PucFactory as MinorFactory;
+use ReasonDev\PluginUpdateChecker\v5\PucFactory as MajorFactory;
+use ReasonDev\PluginUpdateChecker\v5p6\PucFactory as MinorFactory;
 
 require __DIR__ . '/Puc/v5p6/Autoloader.php';
 new Autoloader();

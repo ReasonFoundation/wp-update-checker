@@ -1,8 +1,8 @@
 <?php
 
-namespace YahnisElsts\PluginUpdateChecker\v5p6\DebugBar;
+namespace ReasonDev\PluginUpdateChecker\v5p6\DebugBar;
 
-use YahnisElsts\PluginUpdateChecker\v5p6\Theme\UpdateChecker;
+use ReasonDev\PluginUpdateChecker\v5p6\Theme\UpdateChecker;
 
 if ( !class_exists(ThemePanel::class, false) ):
 

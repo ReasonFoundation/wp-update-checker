@@ -1,10 +1,10 @@
 <?php
 
-namespace YahnisElsts\PluginUpdateChecker\v5p6;
+namespace ReasonDev\PluginUpdateChecker\v5p6;
 
-use YahnisElsts\PluginUpdateChecker\v5p6\Plugin;
-use YahnisElsts\PluginUpdateChecker\v5p6\Theme;
-use YahnisElsts\PluginUpdateChecker\v5p6\Vcs;
+use ReasonDev\PluginUpdateChecker\v5p6\Plugin;
+use ReasonDev\PluginUpdateChecker\v5p6\Theme;
+use ReasonDev\PluginUpdateChecker\v5p6\Vcs;
 
 if ( !class_exists(PucFactory::class, false) ):
 
