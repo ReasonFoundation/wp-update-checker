@@ -13,6 +13,7 @@ From the users' perspective, it works just like with plugins and themes hosted o
   - [Self-hosted Plugins and Themes](#self-hosted-plugins-and-themes)
     - [How to Release an Update](#how-to-release-an-update)
     - [Notes](#notes)
+  - [Reason packages: one-line setup](#reason-packages-one-line-setup)
   - [Reason packages: update key](#reason-packages-update-key)
   - [GitHub Integration](#github-integration)
     - [How to Release an Update](#how-to-release-an-update-1)
@@ -92,6 +93,37 @@ By default, the library will check the specified URL for changes every 12 hours.
 - The third argument - i.e. the slug - is optional but recommended. In most cases, the slug should be the same as the name of your plugin directory. For example, if your plugin lives in `/wp-content/plugins/my-plugin`, set the slug to `my-plugin`. If the slug is omitted, the update checker will use the name of the main plugin file as the slug (e.g. `my-cool-plugin.php` &rarr; `my-cool-plugin`). This can lead to conflicts if your plugin has a generic file name like `plugin.php`. 
 	
 	This doesn't affect themes because PUC uses the theme directory name as the default slug. Still, if you're planning to use the slug in your own code - e.g. to filter updates or override update checker behaviour - it can be a good idea to set it explicitly. 
+
+### Reason packages: one-line setup
+
+For packages served by packages.reason.com, `ReasonUpdates::build()` builds the metadata URL for you:
+
+```php
+use ReasonDev\PluginUpdateChecker\ReasonUpdates;
+
+$my_update_checker = ReasonUpdates::build( 'reason-password-reset', __FILE__ );
+```
+
+- The first argument is the package's slug on the server. Always pass it explicitly: it usually matches the install directory, but that isn't guaranteed.
+- The second is the main plugin file, or any file in the theme's root directory such as `functions.php`. A PSR-4 plugin whose setup code lives in `src/` passes its main-file constant instead of `__FILE__`.
+- It returns the same object as `PucFactory::buildUpdateChecker()`, so any code that uses `$my_update_checker` afterwards keeps working. The optional check period, option name and mu-plugin file arguments follow, as with `PucFactory`.
+- The older form, `PucFactory::buildUpdateChecker( 'https://packages.reason.com/' . $slug . '/?action=get_metadata', __FILE__, $slug )`, still works.
+
+To point a site at a different server, such as staging, set the base address in `wp-config.php`. The update key (see below) is sent to that host automatically:
+
+```php
+define( 'REASON_PACKAGES_URL', 'https://staging-packages.example.com/' );
+```
+
+To change the URL format itself on a site, without waiting for plugin releases, use the `reason_packages_metadata_url` filter, for example from an mu-plugin. If the new URL is on another host, add that host with `reason_packages_updates_hosts` so it receives the key:
+
+```php
+add_filter( 'reason_packages_metadata_url', function ( $url, $slug ) {
+    return 'https://packages.reason.com/v2/' . rawurlencode( $slug ) . '/metadata';
+}, 10, 2 );
+```
+
+When several plugins on a site bundle this library, the first copy WordPress loads supplies `ReasonUpdates` for all of them. A change to the built-in URL format therefore reaches a site only once that copy is updated. The constant and the filter work regardless.
 
 ### Reason packages: update key
 
