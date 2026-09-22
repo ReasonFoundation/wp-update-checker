@@ -92,6 +92,23 @@ By default, the library will check the specified URL for changes every 12 hours.
 	
 	This doesn't affect themes because PUC uses the theme directory name as the default slug. Still, if you're planning to use the slug in your own code - e.g. to filter updates or override update checker behaviour - it can be a good idea to set it explicitly. 
 
+### Reason packages: update key
+
+packages.reason.com can require a shared key for update checks and downloads (the server's `SIMPLE_UPDATE_KEY`). To supply it, add this to the site's `wp-config.php`:
+
+    define( 'REASON_PACKAGES_UPDATES_KEY', 'the-shared-key' );
+
+The library then adds `Authorization: Bearer <key>` to HTTPS requests sent to `packages.reason.com`. No plugin code changes are needed. Download links returned by the server already include the key, so they are left untouched.
+
+To send the key to another host, such as a staging deployment, use the `reason_packages_updates_hosts` filter:
+
+    add_filter( 'reason_packages_updates_hosts', function ( $hosts ) {
+        $hosts[] = 'staging-packages.example.com';
+        return $hosts;
+    } );
+
+**Rollout order:** ship a plugin release that bundles this library version to every site, and define the constant, *before* setting `SIMPLE_UPDATE_KEY` on the server. Sites that don't send the key stop receiving updates as soon as the server starts requiring it.
+
 ### GitHub Integration
 
 1. Download [the latest release](https://github.com/YahnisElsts/plugin-update-checker/releases/latest) and copy the `plugin-update-checker` directory to your plugin or theme.
