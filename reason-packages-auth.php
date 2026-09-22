@@ -9,6 +9,11 @@
  * Download URLs are left alone: the server already embeds the key in them, and
  * WordPress re-sends request headers when it follows the server's redirect to S3,
  * which S3 rejects alongside its own presigned signature.
+ *
+ * Several plugins on a site can bundle this same library. Because the functions
+ * below are declared only if they don't already exist, whichever bundled copy of
+ * this file loads first is the one that supplies them for the whole site -- a
+ * behavior change here only reaches a site once that first-loaded copy is updated.
  */
 
 namespace ReasonDev\PluginUpdateChecker\ReasonPackages;
@@ -40,10 +45,17 @@ if ( !function_exists(__NAMESPACE__ . '\\add_auth_header') ):
 			return $args;
 		}
 
-		//Download URLs already carry the key as a query parameter.
+		//Never add the header to download requests: the server only puts a key on
+		//download URLs once it requires one, so during rollout a download URL may
+		//have no key at all -- and even when it does, WordPress resends this header
+		//when it follows the server's redirect to S3, which S3 then rejects because
+		//the request also carries S3's own presigned signature.
 		if ( isset($parts['query']) ) {
 			parse_str($parts['query'], $query);
-			if ( isset($query['key']) ) {
+			if ( isset($query['action']) && is_string($query['action']) && $query['action'] === 'download' ) {
+				return $args;
+			}
+			if ( isset($query['key']) && is_string($query['key']) && $query['key'] !== '' ) {
 				return $args;
 			}
 		}

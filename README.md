@@ -13,6 +13,7 @@ From the users' perspective, it works just like with plugins and themes hosted o
   - [Self-hosted Plugins and Themes](#self-hosted-plugins-and-themes)
     - [How to Release an Update](#how-to-release-an-update)
     - [Notes](#notes)
+  - [Reason packages: update key](#reason-packages-update-key)
   - [GitHub Integration](#github-integration)
     - [How to Release an Update](#how-to-release-an-update-1)
     - [Notes](#notes-1)
@@ -96,18 +97,22 @@ By default, the library will check the specified URL for changes every 12 hours.
 
 packages.reason.com can require a shared key for update checks and downloads (the server's `SIMPLE_UPDATE_KEY`). To supply it, add this to the site's `wp-config.php`:
 
-    define( 'REASON_PACKAGES_UPDATES_KEY', 'the-shared-key' );
+```php
+define( 'REASON_PACKAGES_UPDATES_KEY', 'the-shared-key' );
+```
 
-The library then adds `Authorization: Bearer <key>` to HTTPS requests sent to `packages.reason.com`. No plugin code changes are needed. Download links returned by the server already include the key, so they are left untouched.
+The library then adds `Authorization: Bearer <key>` to HTTPS requests sent to `packages.reason.com`. No plugin code changes are needed. Download requests (`action=download`) never get this header: the server puts the key into download links itself once it requires one, and the header must not go along for the ride, since S3 rejects a redirected download request that carries both the header and its own presigned signature.
 
 To send the key to another host, such as a staging deployment, use the `reason_packages_updates_hosts` filter:
 
-    add_filter( 'reason_packages_updates_hosts', function ( $hosts ) {
-        $hosts[] = 'staging-packages.example.com';
-        return $hosts;
-    } );
+```php
+add_filter( 'reason_packages_updates_hosts', function ( $hosts ) {
+    $hosts[] = 'staging-packages.example.com';
+    return $hosts;
+} );
+```
 
-**Rollout order:** ship a plugin release that bundles this library version to every site, and define the constant, *before* setting `SIMPLE_UPDATE_KEY` on the server. Sites that don't send the key stop receiving updates as soon as the server starts requiring it.
+**Rollout order:** ship a plugin release that bundles this library version to every site, and define the constant, *before* setting `SIMPLE_UPDATE_KEY` on the server. Sites that don't send the key stop receiving updates as soon as the server starts requiring it. When rotating the key afterward, keep in mind that WordPress caches download links, including the old key, for up to about 12 hours, so downloads may fail until sites run their next update check.
 
 ### GitHub Integration
 

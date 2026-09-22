@@ -64,6 +64,9 @@ check('other host: unchanged', add_auth_header($base, 'https://api.wordpress.org
 check('lookalike host: unchanged', add_auth_header($base, 'https://packages.reason.com.evil.example/x/', 'sekret', $hosts) === $base);
 check('plain http: unchanged', add_auth_header($base, 'http://packages.reason.com/my-plugin/?action=get_metadata', 'sekret', $hosts) === $base);
 check('download URL with key param: unchanged', add_auth_header($base, $dlUrl, 'sekret', $hosts) === $base);
+check('download URL without key param: unchanged', add_auth_header($base, 'https://packages.reason.com/my-plugin/?action=download&slug=my-plugin', 'sekret', $hosts) === $base);
+check('empty key param: header added', isset(add_auth_header($base, 'https://packages.reason.com/my-plugin/?action=get_metadata&key=', 'sekret', $hosts)['headers']['Authorization']));
+check('non-empty key param: unchanged', add_auth_header($base, 'https://packages.reason.com/my-plugin/?action=get_metadata&key=abc', 'sekret', $hosts) === $base);
 check('host match is case-insensitive', isset(add_auth_header($base, 'https://Packages.Reason.COM/my-plugin/', 'sekret', $hosts)['headers']['Authorization']));
 
 $withAuth = array('headers' => array('authorization' => 'Basic abc'));
