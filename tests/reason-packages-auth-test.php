@@ -4,14 +4,7 @@
  * Run: php tests/reason-packages-auth-test.php
  */
 
-$failures = 0;
-function check($name, $condition) {
-	global $failures;
-	echo ($condition ? 'PASS ' : 'FAIL ') . $name . "\n";
-	if ( !$condition ) {
-		$failures++;
-	}
-}
+require __DIR__ . '/check.php';
 
 //Minimal WordPress stubs, defined before loading the file under test.
 $registeredFilters = array();
@@ -98,5 +91,4 @@ $hostOverride = 'not-an-array';
 check('bad host filter value: unchanged', filter_http_request_args($base, $metaUrl) === $base);
 $hostOverride = null;
 
-echo "\n" . ($failures === 0 ? 'ALL PASSED' : "$failures FAILED") . "\n";
-exit($failures === 0 ? 0 : 1);
+finish_tests();
