@@ -37,6 +37,7 @@ require __DIR__ . '/../reason-packages-auth.php';
 
 use function ReasonDev\PluginUpdateChecker\ReasonPackages\add_auth_header;
 use function ReasonDev\PluginUpdateChecker\ReasonPackages\filter_http_request_args;
+use function ReasonDev\PluginUpdateChecker\ReasonPackages\default_hosts;
 
 $hosts   = array('packages.reason.com');
 $metaUrl = 'https://packages.reason.com/my-plugin/?action=get_metadata&installed_version=1.0';
@@ -90,5 +91,12 @@ check('host filter extends allowlist', isset(filter_http_request_args($base, $st
 $hostOverride = 'not-an-array';
 check('bad host filter value: unchanged', filter_http_request_args($base, $metaUrl) === $base);
 $hostOverride = null;
+
+// --- default_hosts / REASON_PACKAGES_URL (last: constants can't be undefined) ---
+check('default hosts without REASON_PACKAGES_URL', default_hosts() === array('packages.reason.com'));
+define('REASON_PACKAGES_URL', ' https://Staging-Packages.example.com/ ');
+check('REASON_PACKAGES_URL host added, lowercased', default_hosts() === array('packages.reason.com', 'staging-packages.example.com'));
+check('REASON_PACKAGES_URL host receives the key', filter_http_request_args($base, 'https://staging-packages.example.com/my-plugin/?action=get_metadata')['headers']['Authorization'] === 'Bearer sekret');
+check('packages.reason.com still receives the key', isset(filter_http_request_args($base, $metaUrl)['headers']['Authorization']));
 
 finish_tests();

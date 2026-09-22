@@ -6,9 +6,10 @@
  * server). If a site defines REASON_PACKAGES_UPDATES_KEY, this adds it to metadata
  * requests as an "Authorization: Bearer" header.
  *
- * Download URLs are left alone: the server already embeds the key in them, and
- * WordPress re-sends request headers when it follows the server's redirect to S3,
- * which S3 rejects alongside its own presigned signature.
+ * Download requests (action=download) are left alone: the server puts the key into
+ * download links itself once it requires one, and WordPress re-sends request headers
+ * when it follows the server's redirect to S3, which S3 rejects alongside its own
+ * presigned signature.
  *
  * Several plugins on a site can bundle this same library. Because the functions
  * below are declared only if they don't already exist, whichever bundled copy of
@@ -78,6 +79,30 @@ if ( !function_exists(__NAMESPACE__ . '\\add_auth_header') ):
 
 endif;
 
+if ( !function_exists(__NAMESPACE__ . '\\default_hosts') ):
+
+	/**
+	 * Hosts that receive the key unless the reason_packages_updates_hosts filter says
+	 * otherwise: packages.reason.com, plus the host of REASON_PACKAGES_URL when a site
+	 * points its update checks somewhere else (see reason-updates.php).
+	 *
+	 * @return string[] Lowercase hostnames.
+	 */
+	function default_hosts() {
+		$hosts = array('packages.reason.com');
+
+		if ( defined('REASON_PACKAGES_URL') && is_string(constant('REASON_PACKAGES_URL')) ) {
+			$host = parse_url(trim(constant('REASON_PACKAGES_URL')), PHP_URL_HOST);
+			if ( is_string($host) && $host !== '' && !in_array(strtolower($host), $hosts, true) ) {
+				$hosts[] = strtolower($host);
+			}
+		}
+
+		return $hosts;
+	}
+
+endif;
+
 if ( !function_exists(__NAMESPACE__ . '\\filter_http_request_args') ):
 
 	/**
@@ -92,7 +117,7 @@ if ( !function_exists(__NAMESPACE__ . '\\filter_http_request_args') ):
 			return $args;
 		}
 
-		$hosts = apply_filters('reason_packages_updates_hosts', array('packages.reason.com'));
+		$hosts = apply_filters('reason_packages_updates_hosts', default_hosts());
 		if ( !is_array($hosts) ) {
 			return $args;
 		}
