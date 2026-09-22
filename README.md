@@ -109,13 +109,13 @@ $my_update_checker = ReasonUpdates::build( 'reason-password-reset', __FILE__ );
 - It returns the same object as `PucFactory::buildUpdateChecker()`, so any code that uses `$my_update_checker` afterwards keeps working. The optional check period, option name and mu-plugin file arguments follow, as with `PucFactory`.
 - The older form, `PucFactory::buildUpdateChecker( 'https://packages.reason.com/' . $slug . '/?action=get_metadata', __FILE__, $slug )`, still works.
 
-To point a site at a different server, such as staging, set the base address in `wp-config.php`. The update key (see below) is sent to that host automatically:
+To point a site at a different server, such as staging, set the base address in `wp-config.php`. It must be the full `https://` address of the update server's root, with no path, on a host used only for the update server: every HTTPS request to that host gets the update key (see below).
 
 ```php
 define( 'REASON_PACKAGES_URL', 'https://staging-packages.example.com/' );
 ```
 
-To change the URL format itself on a site, without waiting for plugin releases, use the `reason_packages_metadata_url` filter, for example from an mu-plugin. If the new URL is on another host, add that host with `reason_packages_updates_hosts` so it receives the key:
+To change the URL format itself on a site, without waiting for plugin releases, use the `reason_packages_metadata_url` filter. Register it before plugins call `build()`, so use an mu-plugin -- a theme's `functions.php` runs too late for plugins. If the new URL is on another host, add that host with `reason_packages_updates_hosts` so it receives the key:
 
 ```php
 add_filter( 'reason_packages_metadata_url', function ( $url, $slug ) {
@@ -123,7 +123,7 @@ add_filter( 'reason_packages_metadata_url', function ( $url, $slug ) {
 }, 10, 2 );
 ```
 
-When several plugins on a site bundle this library, the first copy WordPress loads supplies `ReasonUpdates` for all of them. A change to the built-in URL format therefore reaches a site only once that copy is updated. The constant and the filter work regardless.
+Composer runs only the first-loaded plugin's copy of this library's startup file, so that copy supplies the update-key code, and `ReasonUpdates` too, if it has it. `ReasonUpdates` is also registered with each plugin's own Composer class loader, so a plugin that uses `build()` works even when an older copy loaded first, and `build()` loads the update-key support from its own copy in that case. A change to the built-in URL format itself, though, still only reaches a site once its first-loaded copy is updated -- in practice, that means updating every Reason plugin on the site. The constant and the filter above are the reliable way to change the URL on a site right away.
 
 ### Reason packages: update key
 
@@ -133,7 +133,7 @@ packages.reason.com can require a shared key for update checks and downloads (th
 define( 'REASON_PACKAGES_UPDATES_KEY', 'the-shared-key' );
 ```
 
-The library then adds `Authorization: Bearer <key>` to HTTPS requests sent to `packages.reason.com`. No plugin code changes are needed. Download requests (`action=download`) never get this header: the server puts the key into download links itself once it requires one, and the header must not go along for the ride, since S3 rejects a redirected download request that carries both the header and its own presigned signature.
+The library then adds `Authorization: Bearer <key>` to HTTPS requests sent to `packages.reason.com`, and to the `REASON_PACKAGES_URL` host, if one is set. No plugin code changes are needed. Download requests (`action=download`) never get this header: the server puts the key into download links itself once it requires one, and the header must not go along for the ride, since S3 rejects a redirected download request that carries both the header and its own presigned signature.
 
 To send the key to another host, such as a staging deployment, use the `reason_packages_updates_hosts` filter:
 
@@ -144,7 +144,7 @@ add_filter( 'reason_packages_updates_hosts', function ( $hosts ) {
 } );
 ```
 
-**Rollout order:** ship a plugin release that bundles this library version to every site, and define the constant, *before* setting `SIMPLE_UPDATE_KEY` on the server. Sites that don't send the key stop receiving updates as soon as the server starts requiring it. When rotating the key afterward, keep in mind that WordPress caches download links, including the old key, for up to about 12 hours, so downloads may fail until sites run their next update check.
+**Rollout order:** ship a plugin release that bundles this library version to every site, and define the constant, *before* setting `SIMPLE_UPDATE_KEY` on the server. This matters more than it might look: only the first-loaded plugin's copy of the update-key code runs on a site, so *every* Reason plugin on that site must bundle this library version before you can rely on the key there -- if even one plugin on the site still bundles an older copy and it happens to load first, the key is never sent. Sites that don't send the key stop receiving updates as soon as the server starts requiring it. When rotating the key afterward, keep in mind that WordPress caches download links, including the old key, for up to about 12 hours, so downloads may fail until sites run their next update check.
 
 ### GitHub Integration
 

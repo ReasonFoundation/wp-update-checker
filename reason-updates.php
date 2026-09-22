@@ -9,16 +9,28 @@
  * change the base address with the REASON_PACKAGES_URL constant, and the whole URL
  * with the reason_packages_metadata_url filter.
  *
- * Several plugins on a site can bundle this library. Because the class is declared
- * only if it doesn't already exist, the first bundled copy of this file to load
- * supplies it for the whole site. The constant and the filter work no matter which
- * copy that is.
+ * Several plugins on a site can bundle this library. Composer only runs the
+ * first-loaded plugin's copy of load-v5p6.php, so that copy supplies this class,
+ * if it has one. But this class is also registered with each plugin's own Composer
+ * class loader (see composer.json's "classmap" entry), so ReasonUpdates::build() works
+ * from any bundled copy even when an older, class-less copy loaded first -- and in
+ * that case, build() loads its own copy's update-key support too, if the first-loaded
+ * copy predates it. The constant and the filter work no matter which copy's class
+ * runs, but a change to the built-in URL format itself only reaches a site once its
+ * first-loaded copy is updated -- in practice, once every Reason plugin on the site is.
  */
 
 namespace ReasonDev\PluginUpdateChecker;
 
 if ( !class_exists(ReasonUpdates::class, false) ):
 
+	/**
+	 * Because the first-loaded bundled copy of this library supplies this class for
+	 * every plugin on the site (see the file docblock above), its public methods must
+	 * never be changed or removed once released -- only added. A caller that wants to
+	 * use a method added after the library's first release should check
+	 * method_exists() first, since an older copy may be the one that loaded.
+	 */
 	class ReasonUpdates {
 		const DEFAULT_BASE_URL = 'https://packages.reason.com/';
 
@@ -30,10 +42,16 @@ if ( !class_exists(ReasonUpdates::class, false) ):
 		 * @param int $checkPeriod How often to check for updates (in hours).
 		 * @param string $optionName Where to store bookkeeping info about update checks.
 		 * @param string $muPluginFile The plugin filename relative to the mu-plugins directory.
-		 * @return \ReasonDev\PluginUpdateChecker\v5p6\Plugin\UpdateChecker|\ReasonDev\PluginUpdateChecker\v5p6\Theme\UpdateChecker
-		 * @throws \InvalidArgumentException When the slug is empty or not a string.
+		 * @return \ReasonDev\PluginUpdateChecker\v5p6\Plugin\UpdateChecker|\ReasonDev\PluginUpdateChecker\v5p6\Theme\UpdateChecker|\ReasonDev\PluginUpdateChecker\v5p6\Vcs\BaseChecker
+		 * @throws \InvalidArgumentException When the slug is empty, not a string, or contains a character other than a letter, a number, or - _ . , + !
 		 */
 		public static function build($slug, $fullPath, $checkPeriod = 12, $optionName = '', $muPluginFile = '') {
+			//If an older bundled copy of this library loaded first, Composer skipped this
+			//copy's load-v5p6.php, so the update-key filter may be missing. Load it from here.
+			if ( !function_exists('ReasonDev\\PluginUpdateChecker\\ReasonPackages\\filter_http_request_args') ) {
+				require_once __DIR__ . '/reason-packages-auth.php';
+			}
+
 			return v5\PucFactory::buildUpdateChecker(
 				self::metadataUrl($slug),
 				$fullPath,
@@ -49,11 +67,14 @@ if ( !class_exists(ReasonUpdates::class, false) ):
 		 *
 		 * @param string $slug
 		 * @return string
-		 * @throws \InvalidArgumentException When the slug is empty or not a string.
+		 * @throws \InvalidArgumentException When the slug is empty, not a string, or contains a character other than a letter, a number, or - _ . , + !
 		 */
 		public static function metadataUrl($slug) {
 			if ( !is_string($slug) || trim($slug) === '' ) {
 				throw new \InvalidArgumentException('ReasonUpdates: the package slug must be a non-empty string.');
+			}
+			if ( !preg_match('/^[A-Za-z0-9\-_.,+!]+$/', $slug) ) {
+				throw new \InvalidArgumentException('ReasonUpdates: the package slug may only contain letters, numbers, and - _ . , + !');
 			}
 
 			$url = self::baseUrl() . rawurlencode($slug) . '/?action=get_metadata';
@@ -71,6 +92,7 @@ if ( !class_exists(ReasonUpdates::class, false) ):
 		/**
 		 * The base address: REASON_PACKAGES_URL if the site defines it, otherwise packages.reason.com.
 		 *
+		 * @internal
 		 * @return string Always ends with exactly one slash.
 		 */
 		public static function baseUrl() {
@@ -78,6 +100,7 @@ if ( !class_exists(ReasonUpdates::class, false) ):
 		}
 
 		/**
+		 * @internal
 		 * @param mixed $value Raw base address. Anything but a non-empty string means "use the default".
 		 * @return string Always ends with exactly one slash.
 		 */

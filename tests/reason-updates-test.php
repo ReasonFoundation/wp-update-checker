@@ -59,7 +59,9 @@ namespace {
 
 	// --- metadataUrl ---
 	check('url: default format', ReasonUpdates::metadataUrl('reason-password-reset') === $defaultUrl);
-	check('url: slug is URL-encoded', ReasonUpdates::metadataUrl('my plugin&x') === 'https://packages.reason.com/my%20plugin%26x/?action=get_metadata');
+	check('url: slug with disallowed characters throws', throws_invalid_argument(function () { ReasonUpdates::metadataUrl('my plugin&x'); }));
+	check('url: slug with a slash throws', throws_invalid_argument(function () { ReasonUpdates::metadataUrl('a/b'); }));
+	check('url: all allowed characters accepted', ReasonUpdates::metadataUrl('Ab0-_.,+!') === 'https://packages.reason.com/' . rawurlencode('Ab0-_.,+!') . '/?action=get_metadata');
 	check('url: empty slug throws', throws_invalid_argument(function () { ReasonUpdates::metadataUrl(''); }));
 	check('url: whitespace slug throws', throws_invalid_argument(function () { ReasonUpdates::metadataUrl('   '); }));
 	check('url: null slug throws', throws_invalid_argument(function () { ReasonUpdates::metadataUrl(null); }));
@@ -78,8 +80,11 @@ namespace {
 	check('filter: non-string result falls back', ReasonUpdates::metadataUrl('reason-password-reset') === $defaultUrl);
 	$urlFilter = null;
 
+	check('auth: not loaded before build()', !function_exists('ReasonDev\\PluginUpdateChecker\\ReasonPackages\\filter_http_request_args'));
+
 	// --- build ---
 	check('build: returns what the factory returns', ReasonUpdates::build('reason-password-reset', '/wp/plugins/rpr/rpr.php') === 'CHECKER');
+	check('build: loads the update-key filter when missing', function_exists('ReasonDev\\PluginUpdateChecker\\ReasonPackages\\filter_http_request_args'));
 	check('build: passes URL, path, slug and default options', PucFactory::$calls[0] === array($defaultUrl, '/wp/plugins/rpr/rpr.php', 'reason-password-reset', 12, '', ''));
 	ReasonUpdates::build('my-theme', '/wp/themes/my-theme', 6, 'my_option', 'mu.php');
 	check('build: passes optional arguments through', PucFactory::$calls[1] === array('https://packages.reason.com/my-theme/?action=get_metadata', '/wp/themes/my-theme', 'my-theme', 6, 'my_option', 'mu.php'));
