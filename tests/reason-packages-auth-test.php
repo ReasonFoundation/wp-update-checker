@@ -13,9 +13,37 @@ function check($name, $condition) {
 	}
 }
 
+//Minimal WordPress stubs, defined before loading the file under test.
+$registeredFilters = array();
+$hostOverride = null;
+function add_filter($tag, $callback, $priority = 10, $acceptedArgs = 1) {
+	global $registeredFilters;
+	$registeredFilters[] = array($tag, $callback, $priority, $acceptedArgs);
+	return true;
+}
+function has_filter($tag, $callback = false) {
+	global $registeredFilters;
+	foreach ( $registeredFilters as $filter ) {
+		if ( $filter[0] === $tag && $filter[1] === $callback ) {
+			return $filter[2];
+		}
+	}
+	return false;
+}
+function apply_filters($tag, $value) {
+	global $hostOverride;
+	if ( $tag === 'reason_packages_updates_hosts' && $hostOverride !== null ) {
+		return $hostOverride;
+	}
+	return $value;
+}
+
+require __DIR__ . '/../reason-packages-auth.php';
+//Simulate a second bundled copy of the library loading the same file again.
 require __DIR__ . '/../reason-packages-auth.php';
 
 use function ReasonDev\PluginUpdateChecker\ReasonPackages\add_auth_header;
+use function ReasonDev\PluginUpdateChecker\ReasonPackages\filter_http_request_args;
 
 $hosts   = array('packages.reason.com');
 $metaUrl = 'https://packages.reason.com/my-plugin/?action=get_metadata&installed_version=1.0';
@@ -46,6 +74,26 @@ check('creates headers array when missing', $noHeaders['headers'] === array('Aut
 
 $stringHeaders = array('headers' => "Accept: application/json\r\n");
 check('string-form headers: unchanged', add_auth_header($stringHeaders, $metaUrl, 'sekret', $hosts) === $stringHeaders);
+
+// --- registration ---
+$callback = 'ReasonDev\\PluginUpdateChecker\\ReasonPackages\\filter_http_request_args';
+check('registered exactly once', count($registeredFilters) === 1);
+check('registered on http_request_args, priority 10, 2 args', $registeredFilters[0] === array('http_request_args', $callback, 10, 2));
+
+// --- filter_http_request_args ---
+check('constant undefined: unchanged', filter_http_request_args($base, $metaUrl) === $base);
+
+define('REASON_PACKAGES_UPDATES_KEY', 'sekret');
+check('constant defined: header added', filter_http_request_args($base, $metaUrl)['headers']['Authorization'] === 'Bearer sekret');
+check('constant defined, download URL: unchanged', filter_http_request_args($base, $dlUrl) === $base);
+
+$stagingUrl = 'https://abc123.execute-api.us-east-1.amazonaws.com/my-plugin/?action=get_metadata';
+check('staging host not allowed by default', filter_http_request_args($base, $stagingUrl) === $base);
+$hostOverride = array('packages.reason.com', 'abc123.execute-api.us-east-1.amazonaws.com');
+check('host filter extends allowlist', isset(filter_http_request_args($base, $stagingUrl)['headers']['Authorization']));
+$hostOverride = 'not-an-array';
+check('bad host filter value: unchanged', filter_http_request_args($base, $metaUrl) === $base);
+$hostOverride = null;
 
 echo "\n" . ($failures === 0 ? 'ALL PASSED' : "$failures FAILED") . "\n";
 exit($failures === 0 ? 0 : 1);

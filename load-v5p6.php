@@ -8,6 +8,8 @@ use ReasonDev\PluginUpdateChecker\v5p6\PucFactory as MinorFactory;
 require __DIR__ . '/Puc/v5p6/Autoloader.php';
 new Autoloader();
 
+require_once __DIR__ . '/reason-packages-auth.php';
+
 require __DIR__ . '/Puc/v5p6/PucFactory.php';
 require __DIR__ . '/Puc/v5/PucFactory.php';
 

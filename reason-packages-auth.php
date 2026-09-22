@@ -65,3 +65,37 @@ if ( !function_exists(__NAMESPACE__ . '\\add_auth_header') ):
 	}
 
 endif;
+
+if ( !function_exists(__NAMESPACE__ . '\\filter_http_request_args') ):
+
+	/**
+	 * http_request_args callback: attach REASON_PACKAGES_UPDATES_KEY when defined.
+	 *
+	 * @param array $args
+	 * @param string $url
+	 * @return array
+	 */
+	function filter_http_request_args($args, $url) {
+		if ( !defined('REASON_PACKAGES_UPDATES_KEY') ) {
+			return $args;
+		}
+
+		$hosts = apply_filters('reason_packages_updates_hosts', array('packages.reason.com'));
+		if ( !is_array($hosts) ) {
+			return $args;
+		}
+
+		return add_auth_header($args, $url, constant('REASON_PACKAGES_UPDATES_KEY'), $hosts);
+	}
+
+endif;
+
+//Every bundled copy of the library loads this file; register the filter only once.
+//The function_exists check keeps the library loadable outside WordPress.
+if (
+	function_exists('add_filter')
+	&& !has_filter('http_request_args', __NAMESPACE__ . '\\filter_http_request_args')
+) {
+	//phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.http_request_args -- Adds an auth header only; doesn't modify timeouts.
+	add_filter('http_request_args', __NAMESPACE__ . '\\filter_http_request_args', 10, 2);
+}
