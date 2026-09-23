@@ -5,3 +5,4 @@
 /examples/ export-ignore
 /phpcs.xml export-ignore
 /tests/ export-ignore
+/.skills/ export-ignore
