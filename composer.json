@@ -24,7 +24,7 @@
 		"ext-json": "*"
 	},
 	"autoload": {
-		"files": ["load-v5p6.php"],
+		"files": ["load-v5p7.php"],
 		"classmap": ["reason-updates.php"]
 	}
 }

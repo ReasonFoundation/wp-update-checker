@@ -123,7 +123,17 @@ add_filter( 'reason_packages_metadata_url', function ( $url, $slug ) {
 }, 10, 2 );
 ```
 
-Composer runs only the first-loaded plugin's copy of this library's startup file, so that copy supplies the update-key code, and `ReasonUpdates` too, if it has it. `ReasonUpdates` is also registered with each plugin's own Composer class loader, so a plugin that uses `build()` works even when an older copy loaded first, and `build()` loads the update-key support from its own copy in that case. A change to the built-in URL format itself, though, still only reaches a site once its first-loaded copy is updated -- in practice, that means updating every Reason plugin on the site. The constant and the filter above are the reliable way to change the URL on a site right away.
+Composer runs only one copy of this library's startup file per library version (the file is named after the version, such as `load-v5p7.php`): the first-loaded plugin's copy of that version. So that copy supplies the update-key code, and `ReasonUpdates` too, if it has it. `ReasonUpdates` is also registered with each plugin's own Composer class loader, so a plugin that uses `build()` works even when an older copy loaded first, and `build()` loads the update-key support from its own copy in that case. A change to the built-in URL format itself, though, still only reaches a site once its first-loaded copy is updated -- in practice, that means updating every Reason plugin on the site. The constant and the filter above are the reliable way to change the URL on a site right away.
+
+**Automatic updates:** since library version 5.7, the update checker ignores an `"autoupdate": true` field in update metadata, so a compromised update server can't make sites install updates unattended. packages.reason.com doesn't send that field today. If a plugin should honor it, opt in on the returned checker (the method only exists in 5.7 and later, so check first, in case an older bundled copy loaded):
+
+```php
+if ( method_exists( $my_update_checker, 'allowAutoupdateField' ) ) {
+    $my_update_checker->allowAutoupdateField();
+}
+```
+
+A site can also decide per update with the `puc_autoupdate_field_allowed-<slug>` filter (`puc_autoupdate_field_allowed_theme-<slug>` for themes).
 
 ### Reason packages: update key
 
@@ -247,14 +257,12 @@ The library will pull update details from the following parts of a release/tag/b
 		'unique-plugin-or-theme-slug'
 	);
 
-	//Optional: If you're using a private repository, create an OAuth consumer
-	//and set the authentication credentials like this:
-	//Note: For now you need to check "This is a private consumer" when
-	//creating the consumer to work around #134:
-	// https://github.com/YahnisElsts/plugin-update-checker/issues/134
+	//Optional: If you're using a private repository, create an API token
+	//with the "read:repository:bitbucket" scope and set the authentication
+	//credentials like this:
 	$myUpdateChecker->setAuthentication(array(
-		'consumer_key' => '...',
-		'consumer_secret' => '...',
+		'username'  => 'example@example.com', //Your BitBucket email address.
+		'api_token' => '...',
 	));
 
 	//Optional: Set the branch that contains the stable release.
@@ -311,8 +319,8 @@ BitBucket doesn't have an equivalent to GitHub's releases, so the process is sli
 
 	Alternatively, if you're using a self-hosted GitLab instance, initialize the update checker like this:
 	```php
-	use ReasonDev\PluginUpdateChecker\v5p6\Vcs\PluginUpdateChecker;
-	use ReasonDev\PluginUpdateChecker\v5p6\Vcs\GitLabApi;
+	use ReasonDev\PluginUpdateChecker\v5p7\Vcs\PluginUpdateChecker;
+	use ReasonDev\PluginUpdateChecker\v5p7\Vcs\GitLabApi;
 	
 	$myUpdateChecker = new PluginUpdateChecker(
 		new GitLabApi('https://myserver.com/user-name/repo-name/'),
@@ -323,8 +331,8 @@ BitBucket doesn't have an equivalent to GitHub's releases, so the process is sli
 	```
 	If you're using a self-hosted GitLab instance and [subgroups or nested groups](https://docs.gitlab.com/ce/user/group/subgroups/index.html), you have to tell the update checker which parts of the URL are subgroups:
 	```php
-	use ReasonDev\PluginUpdateChecker\v5p6\Vcs\PluginUpdateChecker;
-	use ReasonDev\PluginUpdateChecker\v5p6\Vcs\GitLabApi;
+	use ReasonDev\PluginUpdateChecker\v5p7\Vcs\PluginUpdateChecker;
+	use ReasonDev\PluginUpdateChecker\v5p7\Vcs\GitLabApi;
    
 	$myUpdateChecker = new PluginUpdateChecker(
 		new GitLabApi(
@@ -406,14 +414,14 @@ Other classes have also been renamed, usually by simply removing the `Puc_vXpY_`
 | Old class name                      | New class name                                                 |
 |-------------------------------------|----------------------------------------------------------------|
 | `Puc_v4_Factory`                    | `ReasonDev\PluginUpdateChecker\v5\PucFactory`                |
-| `Puc_v4p13_Factory`                 | `ReasonDev\PluginUpdateChecker\v5p6\PucFactory`              |
-| `Puc_v4p13_Plugin_UpdateChecker`    | `ReasonDev\PluginUpdateChecker\v5p6\Plugin\UpdateChecker`    |
-| `Puc_v4p13_Theme_UpdateChecker`     | `ReasonDev\PluginUpdateChecker\v5p6\Theme\UpdateChecker`     |
-| `Puc_v4p13_Vcs_PluginUpdateChecker` | `ReasonDev\PluginUpdateChecker\v5p6\Vcs\PluginUpdateChecker` |
-| `Puc_v4p13_Vcs_ThemeUpdateChecker`  | `ReasonDev\PluginUpdateChecker\v5p6\Vcs\ThemeUpdateChecker`  |
-| `Puc_v4p13_Vcs_GitHubApi`           | `ReasonDev\PluginUpdateChecker\v5p6\Vcs\GitHubApi`           |
-| `Puc_v4p13_Vcs_GitLabApi`           | `ReasonDev\PluginUpdateChecker\v5p6\Vcs\GitLabApi`           |
-| `Puc_v4p13_Vcs_BitBucketApi`        | `ReasonDev\PluginUpdateChecker\v5p6\Vcs\BitBucketApi`        |
+| `Puc_v4p13_Factory`                 | `ReasonDev\PluginUpdateChecker\v5p7\PucFactory`              |
+| `Puc_v4p13_Plugin_UpdateChecker`    | `ReasonDev\PluginUpdateChecker\v5p7\Plugin\UpdateChecker`    |
+| `Puc_v4p13_Theme_UpdateChecker`     | `ReasonDev\PluginUpdateChecker\v5p7\Theme\UpdateChecker`     |
+| `Puc_v4p13_Vcs_PluginUpdateChecker` | `ReasonDev\PluginUpdateChecker\v5p7\Vcs\PluginUpdateChecker` |
+| `Puc_v4p13_Vcs_ThemeUpdateChecker`  | `ReasonDev\PluginUpdateChecker\v5p7\Vcs\ThemeUpdateChecker`  |
+| `Puc_v4p13_Vcs_GitHubApi`           | `ReasonDev\PluginUpdateChecker\v5p7\Vcs\GitHubApi`           |
+| `Puc_v4p13_Vcs_GitLabApi`           | `ReasonDev\PluginUpdateChecker\v5p7\Vcs\GitLabApi`           |
+| `Puc_v4p13_Vcs_BitBucketApi`        | `ReasonDev\PluginUpdateChecker\v5p7\Vcs\BitBucketApi`        |
 
 License Management
 ------------------

@@ -10,7 +10,8 @@
  * with the reason_packages_metadata_url filter.
  *
  * Several plugins on a site can bundle this library. Composer only runs the
- * first-loaded plugin's copy of load-v5p6.php, so that copy supplies this class,
+ * first-loaded plugin's copy of each version's startup file (load-v5p7.php for
+ * this version; copies of other versions run their own), so that copy supplies this class,
  * if it has one. But this class is also registered with each plugin's own Composer
  * class loader (see composer.json's "classmap" entry), so ReasonUpdates::build() works
  * from any bundled copy even when an older, class-less copy loaded first -- and in
@@ -42,12 +43,12 @@ if ( !class_exists(ReasonUpdates::class, false) ):
 		 * @param int $checkPeriod How often to check for updates (in hours).
 		 * @param string $optionName Where to store bookkeeping info about update checks.
 		 * @param string $muPluginFile The plugin filename relative to the mu-plugins directory.
-		 * @return \ReasonDev\PluginUpdateChecker\v5p6\Plugin\UpdateChecker|\ReasonDev\PluginUpdateChecker\v5p6\Theme\UpdateChecker|\ReasonDev\PluginUpdateChecker\v5p6\Vcs\BaseChecker
+		 * @return \ReasonDev\PluginUpdateChecker\v5p7\Plugin\UpdateChecker|\ReasonDev\PluginUpdateChecker\v5p7\Theme\UpdateChecker|\ReasonDev\PluginUpdateChecker\v5p7\Vcs\BaseChecker
 		 * @throws \InvalidArgumentException When the slug is empty, not a string, or contains a character other than a letter, a number, or - _ . , + !
 		 */
 		public static function build($slug, $fullPath, $checkPeriod = 12, $optionName = '', $muPluginFile = '') {
 			//If an older bundled copy of this library loaded first, Composer skipped this
-			//copy's load-v5p6.php, so the update-key filter may be missing. Load it from here.
+			//copy's load-v5p7.php, so the update-key filter may be missing. Load it from here.
 			if ( !function_exists('ReasonDev\\PluginUpdateChecker\\ReasonPackages\\filter_http_request_args') ) {
 				require_once __DIR__ . '/reason-packages-auth.php';
 			}
