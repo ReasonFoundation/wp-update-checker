@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # preflight.sh - fetch upstream plugin-update-checker and dry-run the merge.
-# Usage: .skills/upstream-merge/scripts/preflight.sh [--ref <upstream-ref>]
+# Usage: .claude/skills/upstream-merge/scripts/preflight.sh [--ref <upstream-ref>]
 # Output: one JSON object on stdout. Touches nothing but refs/remotes/upstream/*.
 
 set -euo pipefail

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # verify.sh - check a finished upstream merge before committing or opening a PR.
-# Usage: .skills/upstream-merge/scripts/verify.sh [--against <upstream-ref>]
+# Usage: .claude/skills/upstream-merge/scripts/verify.sh [--against <upstream-ref>]
 #   Default ref: refs/remotes/upstream/master (what preflight.sh fetched).
 # Output: one JSON object on stdout; "ok" is true only if every check passed.
 # Exit status: 0 when ok, 1 otherwise.
@@ -40,7 +40,7 @@ done
 #    notes in docs/ and this skill are excluded: upstream leaves stale paths in its
 #    .po comments, and the notes are historical records. tests/load-test.php names
 #    the upstream namespace on purpose, to assert no class uses it.
-EXCLUDE=(':!languages/*.po' ':!docs' ':!.skills' ':!tests/load-test.php')
+EXCLUDE=(':!languages/*.po' ':!docs' ':!.claude' ':!tests/load-test.php')
 NS_LEFT=$(git grep -nI 'YahnisElsts\\' -- . "${EXCLUDE[@]}" || true)
 VER_LEFT=$(git grep -nIE "${MAJOR}p[0-9]+" -- . "${EXCLUDE[@]}" | grep -vE "${VER}([^0-9]|$)" || true)
 

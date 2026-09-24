@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # resolve.sh - resolve the mechanical conflicts of an in-progress upstream merge.
-# Usage: .skills/upstream-merge/scripts/resolve.sh
+# Usage: .claude/skills/upstream-merge/scripts/resolve.sh
 #   Run after `git merge upstream/master` stops with conflicts.
 # Output: one JSON object on stdout. Stages what it resolves; never commits.
 #

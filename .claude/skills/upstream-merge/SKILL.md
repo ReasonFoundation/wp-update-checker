@@ -30,7 +30,7 @@ Not for: editing `reason-packages-auth.php` or `reason-updates.php` on their own
 
 1. **Preflight.** From a clean `master`:
    ```bash
-   .skills/upstream-merge/scripts/preflight.sh
+   .claude/skills/upstream-merge/scripts/preflight.sh
    ```
    It fetches upstream into `refs/remotes/upstream/master` and dry-runs the merge without touching the working tree. Read these fields:
    - `ours_version` / `theirs_version`: the folder rename, if any (for example `v5p6` → `v5p7`).
@@ -46,7 +46,7 @@ Not for: editing `reason-packages-auth.php` or `reason-updates.php` on their own
 
 3. **Resolve the mechanical conflicts.**
    ```bash
-   .skills/upstream-merge/scripts/resolve.sh
+   .claude/skills/upstream-merge/scripts/resolve.sh
    ```
    It stages what it resolves and never commits. If `status` is `needs_manual`:
    - `customized_puc_files[]` lists `Puc/` files that carry a Reason change beyond the namespace. The script refuses to take upstream's side of those. Merge them by hand: keep upstream's code, re-apply our change, and use `ReasonDev` in the namespace.
@@ -57,7 +57,7 @@ Not for: editing `reason-packages-auth.php` or `reason-updates.php` on their own
 
 5. **Verify.**
    ```bash
-   .skills/upstream-merge/scripts/verify.sh
+   .claude/skills/upstream-merge/scripts/verify.sh
    ```
    `ok: true` is required before committing. The checks:
    - no conflict markers
